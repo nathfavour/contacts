@@ -3,22 +3,81 @@ import re
 import sys
 from unidecode import unidecode
 
-def canonize_name(row):
-    # Concatenate all name fields
-    name_fields = [
-        row.get('First Name', ''),
-        row.get('Middle Name', ''),
-        row.get('Last Name', ''),
-        row.get('Phonetic First Name', ''),
-        row.get('Phonetic Middle Name', ''),
-        row.get('Phonetic Last Name', ''),
-        row.get('Name Prefix', ''),
-        row.get('Name Suffix', ''),
-        row.get('Nickname', ''),
-        row.get('File As', ''),
+def is_meaningful_name(name):
+    """Check if a name is meaningful (not just numbers, import metadata, etc.)"""
+    if not name or len(name.strip()) == 0:
+        return False
+    
+    name = name.strip()
+    
+    # Skip import metadata and common non-name patterns
+    skip_patterns = [
+        r'^imported\s+on',
+        r'^\d+$',  # Only numbers
+        r'^_+$',   # Only underscores
+        r'^\d+_*$', # Numbers with trailing underscores
+        r'^_*\d+_*$', # Numbers with underscores
     ]
-    # Join non-empty fields with space
-    name = ' '.join([str(n) for n in name_fields if str(n).strip()])
+    
+    for pattern in skip_patterns:
+        if re.match(pattern, name, re.IGNORECASE):
+            return False
+    
+    # Consider meaningful if it starts with a letter or contains letters
+    return bool(re.search(r'[a-zA-Z]', name))
+
+def find_best_name(row):
+    """Find the most meaningful name from all available fields"""
+    # Define name fields in order of preference
+    name_fields = [
+        'First Name', 'Middle Name', 'Last Name',
+        'Nickname', 'File As', 
+        'Phonetic First Name', 'Phonetic Middle Name', 'Phonetic Last Name',
+        'Name Prefix', 'Name Suffix',
+        'Organization Name', 'Organization Title'
+    ]
+    
+    # Collect all potential names
+    candidates = []
+    for field in name_fields:
+        value = row.get(field, '')
+        if value and str(value).strip():
+            candidates.append(str(value).strip())
+    
+    # Find the first meaningful name
+    for candidate in candidates:
+        if is_meaningful_name(candidate):
+            return candidate
+    
+    # If no meaningful name found, return the first non-empty value
+    for candidate in candidates:
+        if candidate:
+            return candidate
+    
+    return ''
+
+def canonize_name(row):
+    # First try to find the best meaningful name
+    best_name = find_best_name(row)
+    
+    if best_name:
+        name = best_name
+    else:
+        # Fallback to concatenating all name fields
+        name_fields = [
+            row.get('First Name', ''),
+            row.get('Middle Name', ''),
+            row.get('Last Name', ''),
+            row.get('Phonetic First Name', ''),
+            row.get('Phonetic Middle Name', ''),
+            row.get('Phonetic Last Name', ''),
+            row.get('Name Prefix', ''),
+            row.get('Name Suffix', ''),
+            row.get('Nickname', ''),
+            row.get('File As', ''),
+        ]
+        name = ' '.join([str(n) for n in name_fields if str(n).strip()])
+    
     # Normalize stylish/fancy unicode to ASCII
     name = unidecode(name)
     # Replace any remaining non a-z, non-digit, non-space with underscore
@@ -32,6 +91,7 @@ def canonize_name(row):
     # If name is a single character, append underscore
     if len(name) == 1:
         name = name + '_'
+    
     return name
 
 def main():
