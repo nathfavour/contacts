@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 import sys
+from unidecode import unidecode
 
 def canonize_name(row):
     # Concatenate all name fields
@@ -18,8 +19,10 @@ def canonize_name(row):
     ]
     # Join non-empty fields with space
     name = ' '.join([str(n) for n in name_fields if str(n).strip()])
-    # Remove non a-z and non-digit characters (case-insensitive, keep spaces)
-    name = re.sub(r'[^a-zA-Z0-9 ]', '', name)
+    # Normalize stylish/fancy unicode to ASCII
+    name = unidecode(name)
+    # Replace any remaining non a-z, non-digit, non-space with underscore
+    name = re.sub(r'[^a-zA-Z0-9 ]', '_', name)
     # Convert spaces to underscores
     name = re.sub(r'\s+', '_', name)
     # Replace any character repeated 3 or more times with a single instance

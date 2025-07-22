@@ -1,5 +1,6 @@
 import re
 import sys
+from unidecode import unidecode
 
 def remove_emojis(text):
     emoji_pattern = re.compile(
@@ -27,6 +28,8 @@ def main():
     filename = sys.argv[1]
     with open(filename, 'r', encoding='utf-8') as f:
         data = f.read()
+    # Normalize stylish/fancy unicode to ASCII
+    data = unidecode(data)
     cleaned = remove_emojis(data)
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(cleaned)
