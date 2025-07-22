@@ -35,6 +35,18 @@ def main():
     df.fillna('', inplace=True)
     # Apply canonization
     df['First Name'] = df.apply(canonize_name, axis=1)
+    # Ensure unique names
+    name_count = {}
+    new_names = []
+    for name in df['First Name']:
+        base = name
+        if base not in name_count:
+            name_count[base] = 0
+            new_names.append(base)
+        else:
+            name_count[base] += 1
+            new_names.append(f"{base}_{name_count[base]}")
+    df['First Name'] = new_names
     # Clear other name columns
     for col in ['Middle Name', 'Last Name', 'Phonetic First Name', 'Phonetic Middle Name', 'Phonetic Last Name', 'Name Prefix', 'Name Suffix', 'Nickname', 'File As']:
         if col in df.columns:
