@@ -29,6 +29,9 @@ def canonize_name(row):
     name = re.sub(r'(.)\1{2,}', r'\1', name)
     # Remove leading underscores
     name = re.sub(r'^_+', '', name)
+    # If name is a single character, append underscore
+    if len(name) == 1:
+        name = name + '_'
     return name
 
 def main():
