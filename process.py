@@ -18,8 +18,8 @@ def canonize_name(row):
     ]
     # Join non-empty fields with space
     name = ' '.join([str(n) for n in name_fields if str(n).strip()])
-    # Remove non a-z characters (case-insensitive, keep spaces)
-    name = re.sub(r'[^a-zA-Z ]', '', name)
+    # Remove non a-z and non-digit characters (case-insensitive, keep spaces)
+    name = re.sub(r'[^a-zA-Z0-9 ]', '', name)
     # Convert spaces to underscores
     name = re.sub(r'\s+', '_', name)
     # Remove repeating characters (3 or more)
