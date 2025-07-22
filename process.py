@@ -27,6 +27,8 @@ def canonize_name(row):
     name = re.sub(r'\s+', '_', name)
     # Replace any character repeated 3 or more times with a single instance
     name = re.sub(r'(.)\1{2,}', r'\1', name)
+    # Remove leading underscores
+    name = re.sub(r'^_+', '', name)
     return name
 
 def main():
