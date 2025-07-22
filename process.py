@@ -22,7 +22,7 @@ def canonize_name(row):
     name = re.sub(r'[^a-zA-Z0-9 ]', '', name)
     # Convert spaces to underscores
     name = re.sub(r'\s+', '_', name)
-    # Remove repeating characters (3 or more)
+    # Replace any character repeated 3 or more times with a single instance
     name = re.sub(r'(.)\1{2,}', r'\1', name)
     return name
 
